@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Start FastAPI server
+        run: |
+          uvicorn app.main:app --host 127.0.0.1 --port 8000 &
+          echo $! > /tmp/server.pid
+          echo "Waiting for server to be ready..."
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8000/ > /dev/null && echo "Server is up after $i second(s)" && break || sleep 1
+            if [ "$i" -eq 30 ]; then
+              echo "Server failed to start" >&2
+              exit 1
+            fi
+          done
+
+      - name: Run tests
+        run: pytest app/test.py -v
+
+      - name: Stop server
+        if: always()
+        run: |
+          if [ -f /tmp/server.pid ]; then
+            kill "$(cat /tmp/server.pid)" 2>/dev/null || true
+          fi
