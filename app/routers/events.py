@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Path
 from sqlmodel import select
-from app.models.event import Event, EventPublic
+from app.models.event import Event, EventPublic, EventCreate
 from app.data.db import SessionDep
 from typing import Annotated
 
@@ -23,3 +23,10 @@ def get_event(
         return event
     else:
         raise HTTPException(status_code=404, detail="Event not found")
+
+@router.post("/")
+def add_event(event: EventCreate, session: SessionDep):
+    """Crea un nuovo evento e lo salva nel database."""
+    session.add(Event.model_validate(event))
+    session.commit()
+    return "Event successfully added"

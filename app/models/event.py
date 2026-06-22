@@ -15,6 +15,9 @@ class Event(BaseEvent, table=True):
     assegnata automaticamente dal database alla creazione."""
     id: int | None = Field(default=None, primary_key=True)
 
+class EventCreate(BaseEvent):
+    """Schema per creare un nuovo evento (nessun id, fornito dal DB)."""
+    pass
 
 class EventPublic(BaseEvent):
     """Schema di risposta pubblico per l'evento."""
