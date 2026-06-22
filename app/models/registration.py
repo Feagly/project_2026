@@ -1,6 +1,8 @@
-from sqlmodel import SQLModel, Field
+from sqlmodel import Field, SQLModel
 
 
 class Registration(SQLModel, table=True):
-    username: str = Field(primary_key=True, foreign_key="user.username")
-    event_id: int = Field(primary_key=True, foreign_key="event.id")
+    # Chiave primaria composta (username, event_id):
+    # garantisce che un utente non possa registrarsi due volte allo stesso evento
+    username: str = Field(foreign_key="user.username", primary_key=True)
+    event_id: int = Field(foreign_key="event.id", primary_key=True)

@@ -1,6 +1,8 @@
 from fastapi import APIRouter, HTTPException, Path
 from sqlmodel import select
 from app.models.event import Event, EventPublic, EventCreate
+from app.models.user import User, UserCreate
+from app.models.registration import Registration
 from app.data.db import SessionDep
 from typing import Annotated
 
@@ -48,3 +50,27 @@ def update_event(
     session.add(event)
     session.commit()
     return "Event successfully updated"
+
+@router.post("/{id}/register")
+def register_user_to_event(
+        session: SessionDep,
+        id: Annotated[int, Path(description="The ID of the event")],
+        user_data: UserCreate
+):
+    """Registra un utente all'evento. Crea l'utente se non esiste."""
+    event = session.get(Event, id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    # crea l'utente se non esiste già
+    user = session.get(User, user_data.username)
+    if not user:
+        session.add(User.model_validate(user_data))
+
+    # crea la registrazione (se non già presente)
+    existing = session.get(Registration, (user_data.username, id))
+    if not existing:
+        session.add(Registration(username=user_data.username, event_id=id))
+
+    session.commit()
+    return "User successfully registered to event"
