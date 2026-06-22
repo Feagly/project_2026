@@ -5,6 +5,8 @@ import os
 from faker import Faker
 from app.config import config
 # TODO: remember to import all the DB models here
+from app.models.event import Event # NOQA
+from app.models.user import User # NOQA
 from app.models.registration import Registration  # NOQA
 
 
