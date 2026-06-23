@@ -8,7 +8,6 @@ from typing import Annotated
 
 router = APIRouter(prefix="/events")
 
-
 @router.get("/")
 def get_all_events(session: SessionDep) -> list[EventPublic]:
     """Restituisce la lista di tutti gli eventi esistenti."""
@@ -81,3 +80,23 @@ def delete_all_events(session: SessionDep):
     session.exec(delete(Event))
     session.commit()
     return "All events successfully deleted"
+
+@router.delete("/{id}")
+def delete_event(
+        session: SessionDep,
+        id: Annotated[int, Path(description="The ID of the event to delete")]
+):
+    """Elimina l'evento con l'id indicato, eliminando anche le registrazioni associate."""
+    event = session.get(Event, id)
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    registrations = session.exec(
+        select(Registration).where(Registration.event_id == id)
+    ).all()
+    for registration in registrations:
+        session.delete(registration)
+
+    session.delete(event)
+    session.commit()
+    return "Event successfully deleted"
