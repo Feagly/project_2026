@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Path
-from sqlmodel import select
+from sqlmodel import select, delete
 from app.models.event import Event, EventPublic, EventCreate
 from app.models.user import User, UserCreate
 from app.models.registration import Registration
@@ -74,3 +74,10 @@ def register_user_to_event(
 
     session.commit()
     return "User successfully registered to event"
+
+@router.delete("/")
+def delete_all_events(session: SessionDep):
+    """Elimina tutti gli eventi esistenti."""
+    session.exec(delete(Event))
+    session.commit()
+    return "All events successfully deleted"
