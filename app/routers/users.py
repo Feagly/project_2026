@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException, Path
 from sqlmodel import select, delete
-from app.models.event import Event, EventPublic, EventCreate
 from app.models.user import User, UserCreate, UserPublic
 from app.models.registration import Registration
 from app.data.db import SessionDep
