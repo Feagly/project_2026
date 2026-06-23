@@ -34,3 +34,31 @@ def get_user(
         return user
     else:
         raise HTTPException(status_code=404, detail="User not found")
+
+@router.delete("/")
+def delete_all_users(session: SessionDep):
+    """Elimina tutti gli utenti esistenti."""
+    session.exec(delete(User))
+    session.commit()
+    return "All users successfully deleted"
+
+
+@router.delete("/{username}")
+def delete_user(
+        session: SessionDep,
+        username: Annotated[str, Path(description="The username of the user to delete")]
+):
+    """Elimina l'utente indicato, eliminando anche le registrazioni associate."""
+    user = session.get(User, username)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    registrations = session.exec(
+        select(Registration).where(Registration.username == username)
+    ).all()
+    for registration in registrations:
+        session.delete(registration)
+
+    session.delete(user)
+    session.commit()
+    return "User successfully deleted"
