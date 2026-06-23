@@ -22,3 +22,15 @@ def add_user(new_user: UserCreate, session: SessionDep):
     session.add(User.model_validate(new_user))
     session.commit()
     return "User successfully added"
+
+@router.get("/{username}")
+def get_user(
+        session: SessionDep,
+        username: Annotated[str, Path(description="The username of the user to get")]
+) -> UserPublic:
+    """Restituisce l'utente con lo username indicato, o 404 se non esiste."""
+    user = session.get(User, username)
+    if user:
+        return user
+    else:
+        raise HTTPException(status_code=404, detail="User not found")
